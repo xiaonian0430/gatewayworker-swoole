@@ -32,9 +32,9 @@ use SwooleGateway\Cmd\UpdateSession;
 
 class HttpApi
 {
-    private $register_host = '127.0.0.1';
-    private $register_port = 9327;
-    private $register_secret_key = '';
+    private $register_host;
+    private $register_port;
+    private $register_secret_key;
 
     public function __construct(string $register_host = '127.0.0.1', int $register_port = 9327, string $register_secret_key = '')
     {

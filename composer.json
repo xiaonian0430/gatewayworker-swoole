@@ -1,18 +1,14 @@
 {
     "name": "hiper/swoole-gateway",
     "description": "SwooleGateway是基于Swoole开发的一款分布式长连接开发框架。",
-    "keywords": [
-        "php",
-        "swoole"
-    ],
     "homepage": "https://github.com/xiaonian0430/swoole-gateway",
     "license": "Apache-2.0",
     "require": {
         "php": ">=8.0",
         "ext-swoole": "^4.8.0"
     },
-    "suggest": {
-        "swoole/ide-helper": "This package contains IDE help files for Swoole. You may use it in your IDE to provide accurate autocompletion."
+    "require-dev": {
+        "swoole/ide-helper": "*"
     },
     "autoload": {
         "psr-4": {

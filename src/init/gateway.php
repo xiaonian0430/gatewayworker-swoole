@@ -1,7 +1,7 @@
 <?php
 
-use Swoole\Server;
-use Swoole\Timer;
+use Swoole\Server as SWServer;
+use Swoole\Timer as SWTimer;
 use SwooleGateway\Gateway;
 use SwooleGateway\Library\Config;
 
@@ -10,7 +10,7 @@ use SwooleGateway\Library\Config;
  */
 
 foreach (['Connect', 'Open', 'Receive', 'Message'] as $event) {
-    $this->on($event, function (Server $server, ...$args) use ($event) {
+    $this->on($event, function (SWServer $server, ...$args) use ($event) {
 
         if (Config::get('throttle', false)) {
             $info = $server->getClientInfo($args[0]->fd, $args[0]->reactor_id, true);
@@ -18,11 +18,11 @@ foreach (['Connect', 'Open', 'Receive', 'Message'] as $event) {
                 $ip = $info['remote_ip'];
                 if (!isset($this->throttle_list[$ip])) {
                     $this->throttle_list[$ip] = [
-                        'timer' => Timer::tick(Config::get('throttle_interval', 10000), function () use ($ip) {
+                        'timer' => SWTimer::tick(Config::get('throttle_interval', 10000), function () use ($ip) {
                             if ($this->throttle_list[$ip]['fd_list']) {
                                 $this->throttle_list[$ip]['times'] = Config::get('throttle_times', 100);
                             } else {
-                                Timer::clear($this->throttle_list[$ip]['timer']);
+                                SWTimer::clear($this->throttle_list[$ip]['timer']);
                                 unset($this->throttle_list[$ip]);
                             }
                         }),
@@ -65,7 +65,7 @@ foreach (['Connect', 'Open', 'Receive', 'Message'] as $event) {
     });
 }
 
-$this->on('Close', function (Server $server, ...$args) {
+$this->on('Close', function (SWServer $server, ...$args) {
 
     if (Config::get('throttle', false)) {
         $info = $server->getClientInfo($args[0]->fd, $args[0]->reactor_id, true);
@@ -83,8 +83,8 @@ $this->on('Close', function (Server $server, ...$args) {
     ]);
 });
 
-$this->on('WorkerExit', function (Server $server, ...$args) {
+$this->on('WorkerExit', function (SWServer $server, ...$args) {
     foreach ($this->throttle_list as $value) {
-        Timer::clear($value['timer']);
+        SWTimer::clear($value['timer']);
     }
 });

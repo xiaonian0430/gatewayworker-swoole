@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace SwooleGateway;
 
-use Swoole\Coroutine;
-use Swoole\Coroutine\Barrier;
+use Swoole\Coroutine as SWCoroutine;
+use Swoole\Coroutine\Barrier as SWCBarrier;
 use SwooleGateway\Cmd\BindUid;
 use SwooleGateway\Cmd\CloseClient;
 use SwooleGateway\Cmd\DeleteSession;
@@ -599,14 +599,14 @@ class Api
      */
     public static function sendToAddressListAndRecv(array $items, float $timeout = 1): array
     {
-        $barrier = Barrier::make();
+        $barrier = SWCBarrier::make();
         $res = [];
         foreach ($items as $key => $item) {
-            Coroutine::create(function () use ($barrier, $key, $item, $timeout, &$res) {
+            SWCoroutine::create(function () use ($barrier, $key, $item, $timeout, &$res) {
                 $res[$key] = self::sendToAddressAndRecv($item['address'], $item['buffer'], $timeout);
             });
         }
-        Barrier::wait($barrier);
+        SWCBarrier::wait($barrier);
         return $res;
     }
 
