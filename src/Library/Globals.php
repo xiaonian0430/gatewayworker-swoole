@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Library;
+namespace Xielei\Swoole\Library;
 
-use Swoole\Coroutine\Server\Connection as SWCSConnection;
+use Swoole\Coroutine\Server\Connection;
 
 class Globals extends SockServer
 {
@@ -12,7 +12,7 @@ class Globals extends SockServer
 
     public function __construct()
     {
-        parent::__construct(function (SWCSConnection $conn, $params) {
+        parent::__construct(function (Connection $conn, $params) {
             if (!is_array($params)) {
                 return;
             }

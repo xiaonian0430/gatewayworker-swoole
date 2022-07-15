@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Library;
+namespace Xielei\Swoole\Library;
 
-use Swoole\Coroutine as SWCoroutine;
-use Swoole\Coroutine\Server as SWCServer;
-use Swoole\Coroutine\Server\Connection as SWCSConnection;
-use SwooleGateway\Service;
+use Swoole\Coroutine;
+use Swoole\Coroutine\Server as CoroutineServer;
+use Swoole\Coroutine\Server\Connection;
+use Xielei\Swoole\Service;
 
 class Server
 {
@@ -24,7 +24,7 @@ class Server
     public function __construct(string $host, int $port)
     {
         Service::debug("create server {$host}:{$port}");
-        $server = new SWCServer($host, $port, false, true);
+        $server = new CoroutineServer($host, $port, false, true);
         $server->set([
             'open_length_check' => true,
             'package_length_type' => 'N',
@@ -35,7 +35,7 @@ class Server
             'heartbeat_check_interval' => 6,
         ]);
 
-        $server->handle(function (SWCSConnection $conn) {
+        $server->handle(function (Connection $conn) {
             $this->emit('connect', $conn);
             while (!$this->stoped) {
                 $buffer = $conn->recv(1);
@@ -66,7 +66,7 @@ class Server
     public function start()
     {
         $this->emit('start');
-        SWCoroutine::create(function () {
+        Coroutine::create(function () {
             $this->server->start();
         });
     }

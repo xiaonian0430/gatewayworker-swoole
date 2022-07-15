@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Cmd;
+namespace Xielei\Swoole\Cmd;
 
 use Swoole\Coroutine\Server\Connection;
-use SwooleGateway\Interfaces\CmdInterface;
-use SwooleGateway\Gateway;
-use SwooleGateway\Protocol;
+use Xielei\Swoole\Interfaces\CmdInterface;
+use Xielei\Swoole\Gateway;
+use Xielei\Swoole\Protocol;
 
 class GetClientCount implements CmdInterface
 {
