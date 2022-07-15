@@ -1,6 +1,6 @@
 <?php
 
-use Xielei\Swoole\Helper\TaskEvent as HelperTaskEvent;
+use SwooleGateway\Helper\TaskEvent as HelperTaskEvent;
 
 class TaskEvent extends HelperTaskEvent
 {

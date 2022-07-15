@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Xielei\Swoole\Library;
+namespace SwooleGateway\Library;
 
 use Exception;
-use Swoole\ConnectionPool;
-use Swoole\Coroutine;
-use Swoole\Coroutine\Server\Connection;
-use Swoole\Process;
-use Swoole\Coroutine\Server;
-use Swoole\Coroutine\Client;
-use Xielei\Swoole\Protocol;
+use Swoole\ConnectionPool as SWConnectionPool;
+use Swoole\Coroutine as SWCoroutine;
+use Swoole\Coroutine\Server\Connection as SWCSConnection;
+use Swoole\Process as SWProcess;
+use Swoole\Server as SWServer;
+use Swoole\Coroutine\Server as SWCServer;
+use Swoole\Coroutine\Client as SWCClient;
+use SwooleGateway\Protocol;
 
 class SockServer
 {
@@ -23,8 +24,8 @@ class SockServer
     {
         $this->sock_file = $sock_file ?: ('/var/run/' . uniqid() . '.sock');
         $this->callback = $callback;
-        $this->pool = new ConnectionPool(function () {
-            $client = new Client(SWOOLE_UNIX_STREAM);
+        $this->pool = new SWConnectionPool(function () {
+            $client = new SWCClient(SWOOLE_UNIX_STREAM);
             $client->set([
                 'open_length_check' => true,
                 'package_length_type' => 'N',
@@ -34,16 +35,16 @@ class SockServer
             connect:
             if (!$client->connect($this->sock_file)) {
                 $client->close();
-                Coroutine::sleep(0.001);
+                SWCoroutine::sleep(0.001);
                 goto connect;
             }
             return $client;
         });
     }
 
-    public function mountTo(\Swoole\Server $server)
+    public function mountTo(SWServer $server)
     {
-        $server->addProcess(new Process(function (Process $process) {
+        $server->addProcess(new SWProcess(function (SWProcess $process) {
             $this->startLanServer();
         }, false, 2, true));
     }
@@ -77,14 +78,14 @@ class SockServer
 
     private function startLanServer()
     {
-        $server = new Server('unix:' . $this->sock_file);
+        $server = new SWCServer('unix:' . $this->sock_file);
         $server->set([
             'open_length_check' => true,
             'package_length_type' => 'N',
             'package_length_offset' => 0,
             'package_body_offset' => 0,
         ]);
-        $server->handle(function (Connection $conn) {
+        $server->handle(function (SWCSConnection $conn) {
             while (true) {
                 $buffer = $conn->recv(1);
                 if ($buffer === '') {
@@ -105,7 +106,7 @@ class SockServer
         $server->start();
     }
 
-    public static function sendToConn(Connection $conn, $data)
+    public static function sendToConn(SWCSConnection $conn, $data)
     {
         $conn->send(Protocol::encode(serialize($data)));
     }

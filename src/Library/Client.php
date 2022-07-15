@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Xielei\Swoole\Library;
+namespace SwooleGateway\Library;
 
-use Swoole\ConnectionPool;
-use Swoole\Coroutine;
-use Swoole\Coroutine\Client as CoroutineClient;
-use Xielei\Swoole\Service;
+use Swoole\ConnectionPool as SWConnectionPool;
+use Swoole\Coroutine as SWCoroutine;
+use Swoole\Coroutine\Client as SWCClient;
+use SwooleGateway\Service;
 
 class Client
 {
@@ -17,6 +17,7 @@ class Client
     public $onClose;
     public $onError;
     public $onStop;
+    public $timerId;
 
     private $host = null;
     private $port = null;
@@ -29,8 +30,8 @@ class Client
         $this->host = $host;
         $this->port = $port;
 
-        $this->pool = new ConnectionPool(function () use ($host, $port) {
-            $conn = new CoroutineClient(SWOOLE_SOCK_TCP);
+        $this->pool = new SWConnectionPool(function () use ($host, $port) {
+            $conn = new SWCClient(SWOOLE_SOCK_TCP);
             $conn->set([
                 'open_length_check' => true,
                 'package_length_type' => 'N',
@@ -44,7 +45,7 @@ class Client
 
     public function start()
     {
-        Coroutine::create(function () {
+        SWCoroutine::create(function () {
             $this->emit('start');
             $this->connect();
             while (!$this->stoped) {

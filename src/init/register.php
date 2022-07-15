@@ -1,19 +1,19 @@
 <?php
 
-use Swoole\Server;
-use Swoole\Server\Event;
-use Xielei\Swoole\Protocol;
-use Swoole\Timer;
-use Xielei\Swoole\Library\Config;
-use Xielei\Swoole\Register;
-use Xielei\Swoole\Service;
+use Swoole\Server as SWServer;
+use Swoole\Server\Event as SWSEvent;
+use Swoole\Timer as SWTimer;
+use SwooleGateway\Protocol;
+use SwooleGateway\Library\Config;
+use SwooleGateway\Register;
+use SwooleGateway\Service;
 
 /**
  * @var Register $this
  */
 
-$this->on('Connect', function (Server $server, Event $event) {
-    Timer::after(3000, function () use ($server, $event) {
+$this->on('Connect', function (SWServer $server, SWSEvent $event) {
+    SWTimer::after(3000, function () use ($server, $event) {
         if (
             $this->globals->isset('gateway_address_list.' . $event->fd) ||
             $this->globals->isset('worker_fd_list.' . $event->fd)
@@ -27,7 +27,7 @@ $this->on('Connect', function (Server $server, Event $event) {
     });
 });
 
-$this->on('Receive', function (Server $server, Event $event) {
+$this->on('Receive', function (SWServer $server, SWSEvent $event) {
     $data = unpack('Ccmd/A*load', Protocol::decode($event->data));
     switch ($data['cmd']) {
         case Protocol::GATEWAY_CONNECT:
@@ -62,7 +62,7 @@ $this->on('Receive', function (Server $server, Event $event) {
     }
 });
 
-$this->on('Close', function (Server $server, Event $event) {
+$this->on('Close', function (SWServer $server, SWSEvent $event) {
     if ($this->globals->isset('worker_fd_list.' . $event->fd)) {
         $this->globals->unset('worker_fd_list.' . $event->fd);
     }

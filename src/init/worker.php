@@ -1,18 +1,18 @@
 <?php
 
 use function Composer\Autoload\includeFile;
-use Swoole\Server;
-use Swoole\Server\PipeMessage;
-use Xielei\Swoole\Api;
-use Xielei\Swoole\Library\Config;
-use Xielei\Swoole\Service;
-use Xielei\Swoole\Worker;
+use Swoole\Server as SWServer;
+use Swoole\Server\PipeMessage as SWSPipeMessage;
+use SwooleGateway\Api;
+use SwooleGateway\Library\Config;
+use SwooleGateway\Service;
+use SwooleGateway\Worker;
 
 /**
  * @var Worker $this
  */
 
-$this->on('WorkerStart', function (Server $server, int $worker_id, ...$args) {
+$this->on('WorkerStart', function (SWServer $server, int $worker_id, ...$args) {
     $this->sendToProcess([
         'event' => 'gateway_address_list',
         'worker_id' => $worker_id,
@@ -27,7 +27,7 @@ $this->on('WorkerStart', function (Server $server, int $worker_id, ...$args) {
     }
     $this->dispatch('onWorkerStart', $worker_id, ...$args);
 });
-$this->on('PipeMessage', function (Server $server, PipeMessage $pipeMessage, ...$args) {
+$this->on('PipeMessage', function (SWServer $server, SWSPipeMessage $pipeMessage, ...$args) {
     if ($pipeMessage->worker_id >= $server->setting['worker_num'] + $server->setting['task_worker_num']) {
         $data = unserialize($pipeMessage->data);
         switch ($data['event']) {
@@ -46,15 +46,15 @@ $this->on('PipeMessage', function (Server $server, PipeMessage $pipeMessage, ...
     }
 });
 
-$this->on('WorkerExit', function (Server $server, ...$args) {
+$this->on('WorkerExit', function (SWServer $server, ...$args) {
     $this->dispatch('onWorkerExit', ...$args);
 });
-$this->on('WorkerStop', function (Server $server, ...$args) {
+$this->on('WorkerStop', function (SWServer $server, ...$args) {
     $this->dispatch('onWorkerStop', ...$args);
 });
-$this->on('Task', function (Server $server, ...$args) {
+$this->on('Task', function (SWServer $server, ...$args) {
     $this->dispatch('onTask', ...$args);
 });
-$this->on('Finish', function (Server $server, ...$args) {
+$this->on('Finish', function (SWServer $server, ...$args) {
     $this->dispatch('onFinish', ...$args);
 });

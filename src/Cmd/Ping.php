@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Xielei\Swoole\Cmd;
+namespace SwooleGateway\Cmd;
 
 use Swoole\Coroutine\Server\Connection;
-use Xielei\Swoole\Interfaces\CmdInterface;
-use Xielei\Swoole\Gateway;
+use SwooleGateway\Interfaces\CmdInterface;
+use SwooleGateway\Gateway;
 
 class Ping implements CmdInterface
 {

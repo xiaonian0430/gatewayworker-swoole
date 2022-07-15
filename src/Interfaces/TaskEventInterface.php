@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Xielei\Swoole\Interfaces;
+namespace SwooleGateway\Interfaces;
 
-use Swoole\Server\PipeMessage;
-use Swoole\Server\Task;
+use Swoole\Server\PipeMessage as SWSPipeMessage;
+use Swoole\Server\Task as SWSTask;
 
 interface TaskEventInterface
 {
@@ -33,16 +33,16 @@ interface TaskEventInterface
     /**
      * pipe message
      *
-     * @param PipeMessage $pipeMessage
+     * @param SWSPipeMessage $pipeMessage
      * @return void
      */
-    public function onPipeMessage(PipeMessage $pipeMessage);
+    public function onPipeMessage(SWSPipeMessage $pipeMessage);
 
     /**
      * task
      *
-     * @param Task $task
+     * @param SWSTask $task
      * @return void
      */
-    public function onTask(Task $task);
+    public function onTask(SWSTask $task);
 }

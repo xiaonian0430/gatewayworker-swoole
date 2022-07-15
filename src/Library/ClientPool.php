@@ -2,17 +2,17 @@
 
 declare (strict_types = 1);
 
-namespace Xielei\Swoole\Library;
+namespace SwooleGateway\Library;
 
-use Swoole\ConnectionPool;
-use Swoole\Coroutine\Socket;
+use Swoole\ConnectionPool as SWConnectionPool;
+use Swoole\Coroutine\Socket as SWCSocket;
 
-class ClientPool extends ConnectionPool
+class ClientPool extends SWConnectionPool
 {
     public function __construct(string $host, int $port, int $size = 1024)
     {
-        $constructor = function () use ($host, $port): Socket {
-            $conn = new Socket(AF_INET, SOCK_STREAM, 0);
+        $constructor = function () use ($host, $port): SWCSocket {
+            $conn = new SWCSocket(AF_INET, SOCK_STREAM, 0);
             $conn->setProtocol([
                 'open_length_check' => true,
                 'package_length_type' => 'N',
