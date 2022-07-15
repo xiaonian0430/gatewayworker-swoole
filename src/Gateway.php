@@ -12,6 +12,7 @@ use Swoole\Timer as SWTimer;
 use Swoole\WebSocket\Server as SWWSServer;
 use SwooleGateway\Library\Client;
 use SwooleGateway\Library\Config;
+use SwooleGateway\Library\Server;
 
 class Gateway extends Service
 {
@@ -207,7 +208,7 @@ class Gateway extends Service
     protected function startLanServer()
     {
         Service::debug('start to startLanServer');
-        $server = new SWServer($this->lan_host, $this->lan_port);
+        $server = new Server($this->lan_host, $this->lan_port);
         $server->onConnect = function (SWCSConnection $conn) {
             $conn->peername = $conn->exportSocket()->getpeername();
         };
