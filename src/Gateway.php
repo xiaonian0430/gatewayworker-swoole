@@ -66,7 +66,7 @@ class Gateway extends Service
 
             //启动内部服务
             $this->startLanServer();
-            Coroutine::create(function () use ($process) {
+            SWCoroutine::create(function () use ($process) {
                 $socket = $process->exportSocket();
                 $socket->setProtocol([
                     'open_length_check' => true,
