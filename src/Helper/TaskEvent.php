@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Helper;
+namespace Xielei\Swoole\Helper;
 
-use Swoole\Server\PipeMessage as SWSPipeMessage;
-use Swoole\Server\Task as SWSTask;
-use SwooleGateway\Interfaces\TaskEventInterface;
-use SwooleGateway\Worker;
+use Swoole\Server\PipeMessage;
+use Swoole\Server\Task;
+use Xielei\Swoole\Interfaces\TaskEventInterface;
+use Xielei\Swoole\Worker;
 
 class TaskEvent implements TaskEventInterface
 {
@@ -30,11 +30,11 @@ class TaskEvent implements TaskEventInterface
     {
     }
 
-    public function onTask(SWSTask $task)
+    public function onTask(Task $task)
     {
     }
 
-    public function onPipeMessage(SWSPipeMessage $pipeMessage)
+    public function onPipeMessage(PipeMessage $pipeMessage)
     {
     }
 }

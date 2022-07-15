@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Library;
+namespace Xielei\Swoole\Library;
 
 class Config
 {

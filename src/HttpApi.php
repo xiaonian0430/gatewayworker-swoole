@@ -2,39 +2,39 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway;
+namespace Xielei\Swoole;
 
 use Exception;
-use SwooleGateway\Cmd\BindUid;
-use SwooleGateway\Cmd\CloseClient;
-use SwooleGateway\Cmd\DeleteSession;
-use SwooleGateway\Cmd\GetClientCount;
-use SwooleGateway\Cmd\GetClientCountByGroup;
-use SwooleGateway\Cmd\GetClientInfo;
-use SwooleGateway\Cmd\GetClientList;
-use SwooleGateway\Cmd\GetClientListByGroup;
-use SwooleGateway\Cmd\GetClientListByUid;
-use SwooleGateway\Cmd\GetGroupList;
-use SwooleGateway\Cmd\GetSession;
-use SwooleGateway\Cmd\GetUidCount;
-use SwooleGateway\Cmd\GetUidList;
-use SwooleGateway\Cmd\GetUidListByGroup;
-use SwooleGateway\Cmd\IsOnline;
-use SwooleGateway\Cmd\JoinGroup;
-use SwooleGateway\Cmd\LeaveGroup;
-use SwooleGateway\Cmd\SendToAll;
-use SwooleGateway\Cmd\SendToClient;
-use SwooleGateway\Cmd\SendToGroup;
-use SwooleGateway\Cmd\SetSession;
-use SwooleGateway\Cmd\UnBindUid;
-use SwooleGateway\Cmd\UnGroup;
-use SwooleGateway\Cmd\UpdateSession;
+use Xielei\Swoole\Cmd\BindUid;
+use Xielei\Swoole\Cmd\CloseClient;
+use Xielei\Swoole\Cmd\DeleteSession;
+use Xielei\Swoole\Cmd\GetClientCount;
+use Xielei\Swoole\Cmd\GetClientCountByGroup;
+use Xielei\Swoole\Cmd\GetClientInfo;
+use Xielei\Swoole\Cmd\GetClientList;
+use Xielei\Swoole\Cmd\GetClientListByGroup;
+use Xielei\Swoole\Cmd\GetClientListByUid;
+use Xielei\Swoole\Cmd\GetGroupList;
+use Xielei\Swoole\Cmd\GetSession;
+use Xielei\Swoole\Cmd\GetUidCount;
+use Xielei\Swoole\Cmd\GetUidList;
+use Xielei\Swoole\Cmd\GetUidListByGroup;
+use Xielei\Swoole\Cmd\IsOnline;
+use Xielei\Swoole\Cmd\JoinGroup;
+use Xielei\Swoole\Cmd\LeaveGroup;
+use Xielei\Swoole\Cmd\SendToAll;
+use Xielei\Swoole\Cmd\SendToClient;
+use Xielei\Swoole\Cmd\SendToGroup;
+use Xielei\Swoole\Cmd\SetSession;
+use Xielei\Swoole\Cmd\UnBindUid;
+use Xielei\Swoole\Cmd\UnGroup;
+use Xielei\Swoole\Cmd\UpdateSession;
 
 class HttpApi
 {
-    private $register_host;
-    private $register_port;
-    private $register_secret_key;
+    private $register_host = '127.0.0.1';
+    private $register_port = 9327;
+    private $register_secret_key = '';
 
     public function __construct(string $register_host = '127.0.0.1', int $register_port = 9327, string $register_secret_key = '')
     {
@@ -313,7 +313,7 @@ class HttpApi
      * 获取客户信息
      *
      * @param string $client 客户端
-     * @param integer $type 具体要获取哪些数据，默认全部获取，也可按需获取，可选参数：SwooleGateway\Protocol::CLIENT_INFO_UID(绑定的uid) | SwooleGateway\Protocol::CLIENT_INFO_SESSION(session) | SwooleGateway\Protocol::CLIENT_INFO_GROUP_LIST(绑定的分组列表) | SwooleGateway\Protocol::CLIENT_INFO_REMOTE_IP（客户ip） | SwooleGateway\Protocol::CLIENT_INFO_REMOTE_PORT（客户端口） | SwooleGateway\Protocol::CLIENT_INFO_SYSTEM（客户系统信息）
+     * @param integer $type 具体要获取哪些数据，默认全部获取，也可按需获取，可选参数：Xielei\Swoole\Protocol::CLIENT_INFO_UID(绑定的uid) | Xielei\Swoole\Protocol::CLIENT_INFO_SESSION(session) | Xielei\Swoole\Protocol::CLIENT_INFO_GROUP_LIST(绑定的分组列表) | Xielei\Swoole\Protocol::CLIENT_INFO_REMOTE_IP（客户ip） | Xielei\Swoole\Protocol::CLIENT_INFO_REMOTE_PORT（客户端口） | Xielei\Swoole\Protocol::CLIENT_INFO_SYSTEM（客户系统信息）
      * @return array|null
      */
     public function getClientInfo(string $client, int $type = 255): ?array

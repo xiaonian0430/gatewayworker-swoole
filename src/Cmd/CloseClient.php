@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Cmd;
+namespace Xielei\Swoole\Cmd;
 
 use Swoole\Coroutine\Server\Connection;
-use SwooleGateway\Interfaces\CmdInterface;
-use SwooleGateway\Gateway;
+use Xielei\Swoole\Interfaces\CmdInterface;
+use Xielei\Swoole\Gateway;
 
 class CloseClient implements CmdInterface
 {

@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway;
+namespace Xielei\Swoole;
 
-use Swoole\Coroutine as SWCoroutine;
-use Swoole\Process as SWProcess;
-use Swoole\Server as SWServer;
-use Swoole\Timer as SWTimer;
-use SwooleGateway\Cmd\Ping;
-use SwooleGateway\Cmd\RegisterWorker;
-use SwooleGateway\Library\Client;
-use SwooleGateway\Library\Config;
+use Swoole\Coroutine;
+use Swoole\Process;
+use Swoole\Server as SwooleServer;
+use Swoole\Timer;
+use Xielei\Swoole\Cmd\Ping;
+use Swoole\Coroutine\Server\Connection;
+use Xielei\Swoole\Cmd\RegisterWorker;
+use Xielei\Swoole\Library\Client;
+use Xielei\Swoole\Library\Config;
+use Xielei\Swoole\Library\Reload;
+use Xielei\Swoole\Library\SockServer;
 
 class Worker extends Service
 {
@@ -19,24 +22,82 @@ class Worker extends Service
     public $register_port = 9327;
 
     protected $process;
+    protected $inner_server;
+
     protected $gateway_address_list = [];
     protected $gateway_conn_list = [];
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->set([
             'task_worker_num' => swoole_cpu_num()
         ]);
+
         Config::set('init_file', __DIR__ . '/init/worker.php');
-        parent::__construct();
+
+        $this->inner_server = new SockServer(function (Connection $conn, $data) {
+            if (!is_array($data)) {
+                return;
+            }
+            switch (array_shift($data)) {
+                case 'status':
+                    $ret = [
+                        'sw_version' => SW_VERSION,
+                    ] + $this->getServer()->stats() + $this->getServer()->setting + [
+                        'daemonize' => $this->daemonize,
+                        'register_host' => $this->register_host,
+                        'register_port' => $this->register_port,
+                        'gateway_address_list' => json_encode($this->globals->get('gateway_address_list')),
+                    ];
+                    $ret['start_time'] = date(DATE_ISO8601, $ret['start_time']);
+                    SockServer::sendToConn($conn, $ret);
+                    break;
+
+                case 'reload':
+                    $this->getServer()->reload();
+                    break;
+
+                default:
+                    break;
+            }
+        }, '/var/run/' . str_replace('/', '_', array_pop(debug_backtrace())['file']) . '.sock');
+
+        $this->addCommand('status', 'status', 'displays the running status of the service', function (array $args): int {
+            if (!$this->isRun()) {
+                fwrite(STDOUT, "the service is not running!\n");
+                return self::PANEL_LISTEN;
+            }
+
+            $res = $this->inner_server->streamWriteAndRead(['status']);
+            foreach ($res as $key => $value) {
+                fwrite(STDOUT, str_pad((string) $key, 25, '.', STR_PAD_RIGHT) . ' ' . $value . "\n");
+            }
+            return self::PANEL_LISTEN;
+        });
     }
 
-    protected function createServer(): SWServer
+    protected function createServer(): SwooleServer
     {
-        $server = new SWServer('127.0.0.1', 0, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
-        $this->process = new SWProcess(function ($process) {
+        $server = new SwooleServer('127.0.0.1', 0, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
 
-            //连接注册中心
+        $this->inner_server->mountTo($server);
+        $this->process = new Process(function ($process) {
+
+            Config::load($this->config_file);
+            $watch = Config::get('reload_watch', []);
+            $watch[] = $this->config_file;
+            Reload::init($watch);
+            Timer::tick(1000, function () {
+                if (Reload::check()) {
+                    Config::load($this->config_file);
+                    $watch = Config::get('reload_watch', []);
+                    $watch[] = $this->config_file;
+                    Reload::init($watch);
+                }
+            });
+
             $this->connectToRegister();
             $socket = $process->exportSocket();
             while (true) {
@@ -53,7 +114,7 @@ class Worker extends Service
                         ]), $res['worker_id']);
                         break;
                 }
-                SWCoroutine::sleep(1);
+                Coroutine::sleep(1);
             }
         }, false, 2, true);
         $server->addProcess($this->process);
@@ -68,20 +129,15 @@ class Worker extends Service
         $this->process->exportSocket()->send(serialize($data));
     }
 
-    /**
-     * 连接到注册中心
-     */
     protected function connectToRegister()
     {
-        Service::debug('start to connectToRegister');
         $client = new Client($this->register_host, $this->register_port);
         $client->onConnect = function () use ($client) {
             Service::debug("connect to register");
             $client->send(Protocol::encode(pack('C', Protocol::WORKER_CONNECT) . Config::get('register_secret', '')));
 
-            //Worker 定时向注册中心发送心跳包，防止断线
             $ping_buffer = Protocol::encode(pack('C', Protocol::PING));
-            $client->timerId = SWTimer::tick(3000, function () use ($client, $ping_buffer) {
+            $client->timer_id = Timer::tick(30000, function () use ($client, $ping_buffer) {
                 Service::debug("send ping to register");
                 $client->send($ping_buffer);
             });
@@ -117,19 +173,16 @@ class Worker extends Service
         $client->onClose = function () use ($client) {
             Service::debug("closed by register");
             if (isset($client->timer_id)) {
-                SWTimer::clear($client->timer_id);
+                Timer::clear($client->timer_id);
                 unset($client->timer_id);
             }
-            SWCoroutine::sleep(1);
+            Coroutine::sleep(1);
             Service::debug("reconnect to register");
             $client->connect();
         };
         $client->start();
     }
 
-    /**
-     * 刷新网关连接
-     */
     protected function refreshGatewayConn()
     {
         $new_address_list = array_diff_key($this->gateway_address_list, $this->gateway_conn_list);
@@ -140,7 +193,7 @@ class Worker extends Service
                 $client->send(Protocol::encode(RegisterWorker::encode(Config::get('tag_list', []))));
 
                 $ping_buffer = Protocol::encode(pack('C', Ping::getCommandCode()));
-                $client->timerId = SWTimer::tick(3000, function () use ($client, $ping_buffer, $address) {
+                $client->timer_id = Timer::tick(30000, function () use ($client, $ping_buffer, $address) {
                     Service::debug("send ping to gateway {$address['lan_host']}:{$address['lan_port']}");
                     $client->send($ping_buffer);
                 });
@@ -153,11 +206,11 @@ class Worker extends Service
                 ]), $address['lan_port'] % $this->getServer()->setting['worker_num']);
             };
             $client->onClose = function () use ($client, $address) {
-                if (isset($client->timerId)) {
-                    SWTimer::clear($client->timerId);
-                    unset($client->timerId);
+                if (isset($client->timer_id)) {
+                    Timer::clear($client->timer_id);
+                    unset($client->timer_id);
                 }
-                SWCoroutine::sleep(1);
+                Coroutine::sleep(1);
                 Service::debug("reconnect to gateway {$address['lan_host']}:{$address['lan_port']}");
                 $client->connect();
             };

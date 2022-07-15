@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Interfaces;
+namespace Xielei\Swoole\Interfaces;
 
-use Swoole\Coroutine\Server\Connection as SWCSConnection;
-use SwooleGateway\Gateway;
+use Swoole\Coroutine\Server\Connection;
+use Xielei\Swoole\Gateway;
 
 interface CmdInterface
 {
@@ -20,9 +20,9 @@ interface CmdInterface
      * execute command
      *
      * @param Gateway $gateway
-     * @param SWCSConnection $connection
+     * @param Connection $connection
      * @param string $buffer
      * @return void
      */
-    public static function execute(Gateway $gateway, SWCSConnection $connection, string $buffer);
+    public static function execute(Gateway $gateway, Connection $connection, string $buffer);
 }

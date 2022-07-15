@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway\Interfaces;
+namespace Xielei\Swoole\Interfaces;
 
-use Swoole\Server\PipeMessage as SWSPipeMessage;
-use Swoole\Server\TaskResult as SWSTaskResult;
+use Swoole\Server\PipeMessage;
+use Swoole\Server\TaskResult;
 
 interface WorkerEventInterface
 {
@@ -33,18 +33,18 @@ interface WorkerEventInterface
     /**
      * pipe message
      *
-     * @param SWSPipeMessage $pipeMessage
+     * @param PipeMessage $pipeMessage
      * @return void
      */
-    public function onPipeMessage(SWSPipeMessage $pipeMessage);
+    public function onPipeMessage(PipeMessage $pipeMessage);
 
     /**
      * task finish
      *
-     * @param SWSTaskResult $taskResult
+     * @param TaskResult $taskResult
      * @return void
      */
-    public function onFinish(SWSTaskResult $taskResult);
+    public function onFinish(TaskResult $taskResult);
 
     /**
      * tcp connect

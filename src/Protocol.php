@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SwooleGateway;
+namespace Xielei\Swoole;
 
 use Exception;
 
